@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 @Entity
-public class AppUser implements UserDetails {
+public class User implements UserDetails {
 
 
     @SequenceGenerator(name = "user_sequence",
@@ -21,16 +21,18 @@ public class AppUser implements UserDetails {
     private Long id;
     private String firstName;
     private String lastName;
+    private String username;
     private String email;
     private String password;
     private Long NID;
 
-    public AppUser() {
+    public User() {
     }
 
-    public AppUser( String firstName, String lastName, String email, String password, Long NID) {
+    public User(String firstName, String lastName,String username, String email, String password, Long NID) {
         this.firstName = firstName;
         this.lastName = lastName;
+        this.username = username;
         this.email = email;
         this.password = password;
         this.NID = NID;
@@ -58,6 +60,10 @@ public class AppUser implements UserDetails {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {
@@ -92,7 +98,7 @@ public class AppUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override

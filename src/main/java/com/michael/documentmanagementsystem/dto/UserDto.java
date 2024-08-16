@@ -1,18 +1,21 @@
 package com.michael.documentmanagementsystem.dto;
 
-public class UserMatcher {
+public class UserDto {
     private String firstName;
     private String lastName;
+    private String username;
     private String email;
     private String password;
     private Long NID;
 
-    public UserMatcher() {
+    public UserDto() {
     }
 
-    public UserMatcher(String firstName, String lastName, String email, String password, Long NID) {
+
+    public UserDto(String firstName, String lastName, String username, String email, String password, Long NID) {
         this.firstName = firstName;
         this.lastName = lastName;
+        this.username = username;
         this.email = email;
         this.password = password;
         this.NID = NID;
@@ -32,6 +35,14 @@ public class UserMatcher {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {

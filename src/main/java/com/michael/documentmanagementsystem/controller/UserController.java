@@ -1,8 +1,8 @@
 package com.michael.documentmanagementsystem.controller;
 
 import com.michael.documentmanagementsystem.dto.LoginBody;
-import com.michael.documentmanagementsystem.dto.UserMatcher;
-import com.michael.documentmanagementsystem.model.AppUser;
+import com.michael.documentmanagementsystem.dto.UserDto;
+import com.michael.documentmanagementsystem.model.User;
 import com.michael.documentmanagementsystem.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,9 +16,9 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public AppUser register(@RequestBody UserMatcher userMatcher)
+    public User register(@RequestBody UserDto userDto)
     {
-        return userService.register(userMatcher);
+        return userService.register(userDto);
     }
 
     @PostMapping("/login")
