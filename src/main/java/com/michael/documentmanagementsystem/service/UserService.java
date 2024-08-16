@@ -1,9 +1,14 @@
 package com.michael.documentmanagementsystem.service;
 
+import com.michael.documentmanagementsystem.config.filter.JwtService;
+import com.michael.documentmanagementsystem.dto.LoginBody;
 import com.michael.documentmanagementsystem.dto.UserMatcher;
 import com.michael.documentmanagementsystem.model.AppUser;
 import com.michael.documentmanagementsystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,22 +16,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService{
 
     @Autowired
     private UserRepository userRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        AppUser appUser = userRepository.findByEmail(email);
-
-        if(appUser== null)
-        {
-            System.out.println("User Not Found");
-            throw new UsernameNotFoundException("User Not Found");
-        }
-        return appUser;
-    }
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtService jwtService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
     public AppUser register(UserMatcher userMatcher)
     {
@@ -40,7 +38,15 @@ public class UserService implements UserDetailsService {
         return appUser;
     }
 
-    /*public AppUser login(UserMatcher userMatcher) {
+    public String login(LoginBody loginBody) {
 
-    }*/
+        Authentication authentication =
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginBody.getUsername(),loginBody.getPassword()));
+
+        if(authentication.isAuthenticated())
+            return jwtService.generateToken(loginBody.getUsername());
+        else {
+            return "User not Found";
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.michael.documentmanagementsystem.config.filter;
 
+import com.michael.documentmanagementsystem.service.UserDetailsServiceImpl;
 import com.michael.documentmanagementsystem.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -39,7 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if(username!=null && SecurityContextHolder.getContext().getAuthentication() == null)
         {
-            UserDetails userDetails = applicationContext.getBean(UserService.class).loadUserByUsername(username);
+            UserDetails userDetails = applicationContext.getBean(UserDetailsServiceImpl.class).loadUserByUsername(username);
             if(jwtService.validateToken(token,userDetails))
             {
                 UsernamePasswordAuthenticationToken authToken =

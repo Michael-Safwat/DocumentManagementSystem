@@ -1,5 +1,6 @@
 package com.michael.documentmanagementsystem.controller;
 
+import com.michael.documentmanagementsystem.dto.LoginBody;
 import com.michael.documentmanagementsystem.dto.UserMatcher;
 import com.michael.documentmanagementsystem.model.AppUser;
 import com.michael.documentmanagementsystem.service.UserService;
@@ -14,16 +15,16 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    /*@PostMapping("/login")
-    public AppUser login(@RequestBody UserMatcher userMatcher)
-    {
-        return userService.login(userMatcher);
-    }*/
-
     @PostMapping("/register")
     public AppUser register(@RequestBody UserMatcher userMatcher)
     {
         return userService.register(userMatcher);
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestBody LoginBody loginBody)
+    {
+        return userService.login(loginBody);
     }
 
 }
