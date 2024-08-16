@@ -30,7 +30,8 @@ public class UserService implements UserDetailsService {
 
     public AppUser register(UserMatcher userMatcher)
     {
-        AppUser appUser = new AppUser(userMatcher.getFirstName(),
+        AppUser appUser = new AppUser(
+                userMatcher.getFirstName(),
                 userMatcher.getLastName(),
                 userMatcher.getEmail(),
                 bCryptPasswordEncoder.encode(userMatcher.getPassword()),
