@@ -1,11 +1,24 @@
 package com.michael.documentmanagementsystem.dto;
 
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.*;
+
 public class UserDto {
+
+    @NotBlank(message = "first name can't be empty")
     private String firstName;
+    @NotBlank(message = "last name can't be empty")
     private String lastName;
+    @NotBlank(message = "username can't be empty")
     private String username;
+    @Email(message = "invalid email address")
     private String email;
+    @NotBlank(message = "password can't be empty")
     private String password;
+    @NotNull
+    /*@Min(value = 15,message = "NID must be 16 characters long")
+    @Max(value = 17,message = "NID must be 16 characters long")*/
+    //TODO: VALIDATION FOR NID
     private Long NID;
 
     public UserDto() {

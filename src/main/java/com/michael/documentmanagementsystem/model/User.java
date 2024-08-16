@@ -11,7 +11,6 @@ import java.util.Collections;
 @Entity
 public class User implements UserDetails {
 
-
     @SequenceGenerator(name = "user_sequence",
             sequenceName = "user_sequence",
             allocationSize = 1)
@@ -22,8 +21,10 @@ public class User implements UserDetails {
     private String firstName;
     private String lastName;
     private String username;
+    @Column(unique = true)
     private String email;
     private String password;
+    @Column(unique = true)
     private Long NID;
 
     public User() {
