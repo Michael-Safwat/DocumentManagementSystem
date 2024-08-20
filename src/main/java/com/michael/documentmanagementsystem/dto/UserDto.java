@@ -15,10 +15,7 @@ public class UserDto {
     private String email;
     @NotBlank(message = "password can't be empty")
     private String password;
-    @NotNull
-    /*@Min(value = 15,message = "NID must be 16 characters long")
-    @Max(value = 17,message = "NID must be 16 characters long")*/
-    //TODO: VALIDATION FOR NID
+    @Digits(integer = 16,fraction = 0,message = "National ID must be of 16 digits long")
     private Long NID;
 
     public UserDto() {

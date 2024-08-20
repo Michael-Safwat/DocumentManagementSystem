@@ -1,6 +1,7 @@
 package com.michael.documentmanagementsystem.advice;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -21,5 +22,12 @@ public class ApplicationExceptionHandler {
                 error -> errorMap.put(error.getField(),error.getDefaultMessage()));
 
         return errorMap;
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public String handleInvalidArgument(UsernameNotFoundException e)
+    {
+        return e.getMessage();
     }
 }

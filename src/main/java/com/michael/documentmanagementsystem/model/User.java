@@ -7,17 +7,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 
-@Entity
+@Entity(name = "users")
 public class User implements UserDetails {
 
-    @SequenceGenerator(name = "user_sequence",
-            sequenceName = "user_sequence",
-            allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,
-            generator = "user_sequence")
     @Id
-    private Long id;
+    @GeneratedValue
+    private UUID id;
     private String firstName;
     private String lastName;
     private String username;
@@ -30,7 +27,7 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(String firstName, String lastName,String username, String email, String password, Long NID) {
+    public User(String firstName, String lastName, String username, String email, String password, Long NID) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
@@ -39,11 +36,11 @@ public class User implements UserDetails {
         this.NID = NID;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
