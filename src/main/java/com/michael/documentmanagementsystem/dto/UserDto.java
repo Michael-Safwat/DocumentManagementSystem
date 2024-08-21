@@ -1,6 +1,5 @@
 package com.michael.documentmanagementsystem.dto;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 
 public class UserDto {
