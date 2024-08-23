@@ -1,8 +1,9 @@
 package com.michael.documentmanagementsystem.service;
 
 import com.michael.documentmanagementsystem.config.filter.JwtService;
-import com.michael.documentmanagementsystem.dto.LoginDto;
-import com.michael.documentmanagementsystem.dto.UserDto;
+import com.michael.documentmanagementsystem.dto.LoginRequest;
+import com.michael.documentmanagementsystem.dto.RegisterRequest;
+import com.michael.documentmanagementsystem.dto.RegisterResponse;
 import com.michael.documentmanagementsystem.mapper.UserMapper;
 import com.michael.documentmanagementsystem.model.User;
 import com.michael.documentmanagementsystem.repository.UserRepository;
@@ -28,20 +29,21 @@ public class UserService{
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
-    public UserDto register(UserDto userDto)
+    public RegisterResponse register(RegisterRequest registerRequest)
     {
-        userDto.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
-        User user = userMapper.toEntity(userDto);
+        registerRequest.setPassword(bCryptPasswordEncoder.encode(registerRequest.getPassword()));
+        User user = userMapper.registerRequestToUser(registerRequest);
+        RegisterResponse registerResponse = userMapper.userToRegisterResponse(user);
         userRepository.save(user);
-        return userDto;
+        return registerResponse;
     }
 
-    public String login(LoginDto loginDto) {
+    public String login(LoginRequest loginRequest) {
         Authentication authentication =
-                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
         if(authentication.isAuthenticated())
-            return jwtService.generateToken(loginDto.getUsername());
+            return jwtService.generateToken(loginRequest.getEmail());
         else
             throw new UsernameNotFoundException("User Not Found");
     }

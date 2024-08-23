@@ -1,7 +1,8 @@
 package com.michael.documentmanagementsystem.controller;
 
-import com.michael.documentmanagementsystem.dto.LoginDto;
-import com.michael.documentmanagementsystem.dto.UserDto;
+import com.michael.documentmanagementsystem.dto.LoginRequest;
+import com.michael.documentmanagementsystem.dto.RegisterRequest;
+import com.michael.documentmanagementsystem.dto.RegisterResponse;
 import com.michael.documentmanagementsystem.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +19,14 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> register(@RequestBody @Valid UserDto userDto)
+    public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterRequest registerRequest)
     {
-        return new ResponseEntity<>(userService.register(userDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(userService.register(registerRequest), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDto loginDto)
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest)
     {
-        return new ResponseEntity<>(userService.login(loginDto),HttpStatus.OK);
+        return new ResponseEntity<>(userService.login(loginRequest),HttpStatus.OK);
     }
 }
