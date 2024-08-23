@@ -17,7 +17,6 @@ public class User implements UserDetails {
     private UUID id;
     private String firstName;
     private String lastName;
-    private String username;
     @Column(unique = true)
     private String email;
     private String password;
@@ -27,10 +26,9 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(String firstName, String lastName, String username, String email, String password, Long NID) {
+    public User(String firstName, String lastName, String email, String password, Long NID) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.username = username;
         this.email = email;
         this.password = password;
         this.NID = NID;
@@ -58,10 +56,6 @@ public class User implements UserDetails {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getEmail() {
@@ -96,7 +90,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     @Override

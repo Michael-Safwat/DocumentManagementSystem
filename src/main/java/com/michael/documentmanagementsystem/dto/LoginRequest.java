@@ -2,26 +2,27 @@ package com.michael.documentmanagementsystem.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public class LoginDto {
-    @NotBlank(message = "username can't be empty")
-    private String username;
+
+public class LoginRequest {
+    @NotBlank(message = "email can't be empty")
+    private String email;
     @NotBlank(message = "password can't be empty")
     private String password;
 
-    public LoginDto() {
+    public LoginRequest() {
     }
 
-    public LoginDto(String username, String password) {
-        this.username = username;
+    public LoginRequest(String email, String password) {
+        this.email = email;
         this.password = password;
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
