@@ -1,12 +1,13 @@
 package com.michael.documentmanagementsystem.dto;
 
 public class RegisterResponse {
-    private  String firstName;
-    private  String lastName;
-    private  String email;
-    private  Long NID;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private Long NID;
 
-    public RegisterResponse() {}
+    public RegisterResponse() {
+    }
 
     public RegisterResponse(String firstName, String lastName, String email, Long NID) {
         this.firstName = firstName;

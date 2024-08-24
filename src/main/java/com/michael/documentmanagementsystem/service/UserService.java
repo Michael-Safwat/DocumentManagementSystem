@@ -2,6 +2,7 @@ package com.michael.documentmanagementsystem.service;
 
 import com.michael.documentmanagementsystem.config.filter.JwtService;
 import com.michael.documentmanagementsystem.dto.LoginRequest;
+import com.michael.documentmanagementsystem.dto.LoginResponse;
 import com.michael.documentmanagementsystem.dto.RegisterRequest;
 import com.michael.documentmanagementsystem.dto.RegisterResponse;
 import com.michael.documentmanagementsystem.mapper.UserMapper;
@@ -16,7 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService{
+public class UserService {
 
     @Autowired
     private UserRepository userRepository;
@@ -29,8 +30,7 @@ public class UserService{
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
-    public RegisterResponse register(RegisterRequest registerRequest)
-    {
+    public RegisterResponse register(RegisterRequest registerRequest) {
         registerRequest.setPassword(bCryptPasswordEncoder.encode(registerRequest.getPassword()));
         User user = userMapper.registerRequestToUser(registerRequest);
         RegisterResponse registerResponse = userMapper.userToRegisterResponse(user);
@@ -38,12 +38,20 @@ public class UserService{
         return registerResponse;
     }
 
-    public String login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest) {
         Authentication authentication =
-                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+                authenticationManager.
+                        authenticate(new UsernamePasswordAuthenticationToken(
+                                loginRequest.getEmail(),
+                                loginRequest.getPassword()));
 
-        if(authentication.isAuthenticated())
-            return jwtService.generateToken(loginRequest.getEmail());
+        if (authentication.isAuthenticated())
+        {
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setToken(jwtService.generateToken(loginRequest.getEmail()));
+            loginResponse.setEmail(loginRequest.getEmail());
+            return loginResponse;
+        }
         else
             throw new UsernameNotFoundException("User Not Found");
     }

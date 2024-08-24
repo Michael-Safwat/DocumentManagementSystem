@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("login","register").permitAll()
+                        .requestMatchers("login", "register").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -51,8 +51,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider()
-    {
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
         daoAuthenticationProvider.setPasswordEncoder(new BCryptPasswordEncoder(12));
@@ -66,15 +65,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsFilter corsFilter()
-    {
+    public CorsFilter corsFilter() {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
         config.setAllowedHeaders(Arrays.asList(
-            HttpHeaders
-                    .ORIGIN,
+                HttpHeaders
+                        .ORIGIN,
                 CONTENT_TYPE,
                 ACCEPT,
                 AUTHORIZATION
@@ -86,7 +84,7 @@ public class SecurityConfig {
                 "PUT",
                 "PATCH"
         ));
-        source.registerCorsConfiguration("/**",config);
+        source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
 }

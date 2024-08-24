@@ -19,7 +19,8 @@ public class RegisterRequest {
     private String password;
     private Long NID;
 
-    public RegisterRequest() {}
+    public RegisterRequest() {
+    }
 
     public RegisterRequest(String firstName, String lastName, String email, String password, Long NID) {
         this.firstName = firstName;

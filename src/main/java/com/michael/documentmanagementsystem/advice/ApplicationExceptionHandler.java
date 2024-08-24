@@ -15,19 +15,17 @@ public class ApplicationExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String,String> handleInvalidArgument(MethodArgumentNotValidException e)
-    {
-        Map<String,String> errorMap = new HashMap<>();
+    public Map<String, String> handleInvalidArgument(MethodArgumentNotValidException e) {
+        Map<String, String> errorMap = new HashMap<>();
         e.getBindingResult().getFieldErrors().forEach(
-                error -> errorMap.put(error.getField(),error.getDefaultMessage()));
+                error -> errorMap.put(error.getField(), error.getDefaultMessage()));
 
         return errorMap;
     }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(UsernameNotFoundException.class)
-    public String handleInvalidArgument(UsernameNotFoundException e)
-    {
+    public String handleInvalidArgument(UsernameNotFoundException e) {
         return e.getMessage();
     }
 }
