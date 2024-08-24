@@ -24,8 +24,9 @@ public class JwtService {
     public JwtService() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
         SecretKey sk = keyGenerator.generateKey();
-        secretKey= Base64.getEncoder().encodeToString(sk.getEncoded());
+        secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
     }
+
     public String generateToken(String username) {
 
         Map<String, Object> claims = new HashMap<>();
@@ -35,7 +36,7 @@ public class JwtService {
                 .add(claims)
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+60*60*30))
+                .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 30))
                 .and()
                 .signWith(getKey())
                 .compact();
