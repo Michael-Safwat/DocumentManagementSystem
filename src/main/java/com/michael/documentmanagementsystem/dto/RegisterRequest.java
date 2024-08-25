@@ -17,12 +17,12 @@ public class RegisterRequest {
     private String email;
     @NotBlank(message = "password can't be empty")
     private String password;
-    private Long NID;
+    private String NID;
 
     public RegisterRequest() {
     }
 
-    public RegisterRequest(String firstName, String lastName, String email, String password, Long NID) {
+    public RegisterRequest(String firstName, String lastName, String email, String password, String NID) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -62,11 +62,11 @@ public class RegisterRequest {
         this.password = password;
     }
 
-    public Long getNID() {
+    public String getNID() {
         return NID;
     }
 
-    public void setNID(Long NID) {
+    public void setNID(String NID) {
         this.NID = NID;
     }
 }

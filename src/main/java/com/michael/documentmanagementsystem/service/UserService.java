@@ -47,9 +47,11 @@ public class UserService {
 
         if (authentication.isAuthenticated())
         {
+            User user = userRepository.findByEmail(loginRequest.getEmail());
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setToken(jwtService.generateToken(loginRequest.getEmail()));
             loginResponse.setEmail(loginRequest.getEmail());
+            loginResponse.setNID(user.getNID());
             return loginResponse;
         }
         else

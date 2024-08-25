@@ -3,12 +3,12 @@ package com.michael.documentmanagementsystem.dto;
 public class LoginResponse {
     private String token;
     private String email;
-    private String NID;
+    private Long NID;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(String token, String email, String NID) {
+    public LoginResponse(String token, String email, Long NID) {
         this.token = token;
         this.email = email;
         this.NID = NID;
@@ -30,11 +30,11 @@ public class LoginResponse {
         this.email = email;
     }
 
-    public String getNID() {
+    public Long getNID() {
         return NID;
     }
 
-    public void setNID(String NID) {
+    public void setNID(Long NID) {
         this.NID = NID;
     }
 }
