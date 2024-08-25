@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 
 public class RegisterRequest {
@@ -17,6 +18,8 @@ public class RegisterRequest {
     private String email;
     @NotBlank(message = "password can't be empty")
     private String password;
+    @NotBlank(message ="National ID can't be empty")
+    @Length(min = 16,max = 16, message = "National ID must be 16 digits long")
     private String NID;
 
     public RegisterRequest() {
