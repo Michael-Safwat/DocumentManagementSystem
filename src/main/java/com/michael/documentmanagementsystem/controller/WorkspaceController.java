@@ -14,22 +14,20 @@ import java.util.List;
 public class WorkspaceController {
 
     @Autowired
-    WorkspaceService workspaceService;
+    private WorkspaceService workspaceService;
 
     @PostMapping("/workspaces")
-    public ResponseEntity<String> createWorkspace(@RequestBody WorkspaceRequest workspace)
-    {
+    public ResponseEntity<String> createWorkspace(@RequestBody WorkspaceRequest workspace) {
         return new ResponseEntity<>(workspaceService.createWorkspace(workspace), HttpStatus.CREATED);
     }
 
     @GetMapping("/workspaces/{NID}")
-    public ResponseEntity<List<Workspace>> getWorkspacesByNID(@PathVariable Long NID)
-    {
-        return new ResponseEntity<>(workspaceService.getWorkspacesByNID(NID),HttpStatus.OK);
+    public ResponseEntity<List<Workspace>> getWorkspacesByNID(@PathVariable Long NID) {
+        return new ResponseEntity<>(workspaceService.getWorkspacesByNID(NID), HttpStatus.OK);
     }
+
     @PutMapping("/workspaces/{workspaceId}")
-    public ResponseEntity<Boolean> updateWorkspace(@PathVariable String workspaceId, @RequestBody WorkspaceRequest workspaceRequest)
-    {
+    public ResponseEntity<Boolean> updateWorkspace(@PathVariable String workspaceId, @RequestBody WorkspaceRequest workspaceRequest) {
         HttpStatus httpStatus;
         Boolean result = workspaceService.updateWorkspace(workspaceRequest);
 
@@ -38,11 +36,11 @@ public class WorkspaceController {
         else
             httpStatus = HttpStatus.NOT_FOUND;
 
-        return new ResponseEntity<>(result,httpStatus);
+        return new ResponseEntity<>(result, httpStatus);
     }
+
     @DeleteMapping("/workspaces/{workspaceId}")
-    public ResponseEntity<HttpStatus> deleteWorkspace(@PathVariable String workspaceId)
-    {
+    public ResponseEntity<HttpStatus> deleteWorkspace(@PathVariable String workspaceId) {
         workspaceService.deleteWorkspace(workspaceId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

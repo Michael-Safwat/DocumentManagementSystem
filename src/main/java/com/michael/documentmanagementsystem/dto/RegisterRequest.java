@@ -1,13 +1,12 @@
 package com.michael.documentmanagementsystem.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RegisterRequest {
 
     @NotBlank(message = "first name can't be empty")
@@ -19,57 +18,7 @@ public class RegisterRequest {
     @NotBlank(message = "password can't be empty")
     private String password;
     @NotBlank(message ="National ID can't be empty")
-    @Length(min = 16,max = 16, message = "National ID must be 16 digits long")
+    @Pattern(regexp = "^\\d{16}+$",message = "National ID must be of 16 digits only")
     private String NID;
 
-    public RegisterRequest() {
-    }
-
-    public RegisterRequest(String firstName, String lastName, String email, String password, String NID) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-        this.NID = NID;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getNID() {
-        return NID;
-    }
-
-    public void setNID(String NID) {
-        this.NID = NID;
-    }
 }
