@@ -24,4 +24,5 @@ public class Workspace {
     private String path;
     private Long userNID;
     private List<File> files;
+    private boolean isDeleted;
 }

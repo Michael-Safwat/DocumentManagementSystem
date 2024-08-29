@@ -1,10 +1,13 @@
 package com.michael.documentmanagementsystem.mapper;
 
-import com.michael.documentmanagementsystem.dto.WorkspaceRequest;
+import com.michael.documentmanagementsystem.dto.WorkspaceDto;
 import com.michael.documentmanagementsystem.model.Workspace;
 import org.mapstruct.Mapper;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface WorkspaceMapper {
-    Workspace workspaceRequestToWorkspace(WorkspaceRequest workspaceRequest);
+    Workspace dtoToWorkspace(WorkspaceDto workspaceDto);
+    List<WorkspaceDto> workspacesToDtos(List<Workspace> workspaces);
 }
