@@ -1,10 +1,7 @@
 package com.michael.documentmanagementsystem.service;
 
 import com.michael.documentmanagementsystem.config.filter.JwtService;
-import com.michael.documentmanagementsystem.dto.LoginRequest;
-import com.michael.documentmanagementsystem.dto.LoginResponse;
-import com.michael.documentmanagementsystem.dto.RegisterRequest;
-import com.michael.documentmanagementsystem.dto.RegisterResponse;
+import com.michael.documentmanagementsystem.dto.UserDto;
 import com.michael.documentmanagementsystem.mapper.UserMapper;
 import com.michael.documentmanagementsystem.model.User;
 import com.michael.documentmanagementsystem.repository.UserRepository;
@@ -30,31 +27,27 @@ public class UserService {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
-    public RegisterResponse register(RegisterRequest registerRequest) {
-        registerRequest.setPassword(bCryptPasswordEncoder.encode(registerRequest.getPassword()));
-        User user = userMapper.registerRequestToUser(registerRequest);
-        RegisterResponse registerResponse = userMapper.userToRegisterResponse(user);
-        userRepository.save(user);
-        return registerResponse;
+    public UserDto register(UserDto userDto) {
+        userDto.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
+        User user = userMapper.toEntity(userDto);
+        user = userRepository.save(user);
+        userDto = userMapper.toDto(user);
+        return userDto;
     }
 
-    public LoginResponse login(LoginRequest loginRequest) {
+    public UserDto login(UserDto userDto) {
         Authentication authentication =
                 authenticationManager.
                         authenticate(new UsernamePasswordAuthenticationToken(
-                                loginRequest.getEmail(),
-                                loginRequest.getPassword()));
+                                userDto.getEmail(),
+                                userDto.getPassword()));
 
-        if (authentication.isAuthenticated())
-        {
-            User user = userRepository.findByEmail(loginRequest.getEmail());
-            LoginResponse loginResponse = new LoginResponse();
-            loginResponse.setToken(jwtService.generateToken(loginRequest.getEmail()));
-            loginResponse.setEmail(loginRequest.getEmail());
-            loginResponse.setNID(user.getNID());
-            return loginResponse;
-        }
-        else
+        if (authentication.isAuthenticated()) {
+            User user = userRepository.findByEmail(userDto.getEmail());
+            userDto = userMapper.toDto(user);
+            userDto.setToken(jwtService.generateToken(userDto.getEmail()));
+            return userDto;
+        } else
             throw new UsernameNotFoundException("User Not Found");
     }
 }

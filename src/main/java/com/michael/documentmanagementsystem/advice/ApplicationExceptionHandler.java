@@ -31,8 +31,7 @@ public class ApplicationExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(Exception.class)
-    public String handleExceptions(Exception e)
-    {
+    public String handleExceptions(Exception e) {
         return e.getMessage();
     }
 }

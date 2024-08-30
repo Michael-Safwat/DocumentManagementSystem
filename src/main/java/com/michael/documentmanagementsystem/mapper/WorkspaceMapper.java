@@ -9,5 +9,8 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface WorkspaceMapper {
     Workspace dtoToWorkspace(WorkspaceDto workspaceDto);
+
+    WorkspaceDto toEntity(Workspace workspace);
+
     List<WorkspaceDto> workspacesToDtos(List<Workspace> workspaces);
 }

@@ -1,8 +1,11 @@
 package com.michael.documentmanagementsystem.dto;
 
+import com.michael.documentmanagementsystem.model.Document;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -10,6 +13,6 @@ import lombok.NoArgsConstructor;
 public class WorkspaceDto {
     private String id;
     private String name;
-    private String path;
-    private Long userNID;
+    private UserDto user;
+    private List<Document> documents;
 }
