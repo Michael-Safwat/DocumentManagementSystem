@@ -35,14 +35,14 @@ public class WorkspaceService {
 
     public WorkspaceDto createWorkspace(WorkspaceDto workspaceDto, Long nid) throws FileSystemException {
 
-        Workspace workspace = workspaceMapper.dtoToWorkspace(workspaceDto);
+        Workspace workspace = workspaceMapper.toEntity(workspaceDto);
         User user = userRepository.findAllByNID(nid);
 
         if (user == null)
             throw new UsernameNotFoundException("No user with such NID");
 
         workspace.setPath(PATH + File.separator + nid + File.separator + workspace.getName());
-        workspace.setDocuments(Collections.<Document>emptyList());
+        workspace.setDocuments(Collections.emptyList());
         workspace.setUser(user);
 
 
@@ -54,7 +54,7 @@ public class WorkspaceService {
         if (!result)
             throw new FileSystemException("error creating directory");
 
-        workspaceDto = workspaceMapper.toEntity(savedWorkspace);
+        workspaceDto = workspaceMapper.toDto(savedWorkspace);
 
         return workspaceDto;
     }
@@ -62,7 +62,7 @@ public class WorkspaceService {
     public List<WorkspaceDto> getWorkspacesByNID(Long NID) {
         List<Workspace> workspaces = workspaceRepository.findAllByUserNID(NID);
         List<Workspace> result = workspaces.stream().filter(workspace -> !workspace.isDeleted()).toList();
-        return workspaceMapper.workspacesToDtos(result);
+        return workspaceMapper.ToDtos(result);
     }
 
     //todo: update workspace

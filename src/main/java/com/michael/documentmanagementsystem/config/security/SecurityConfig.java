@@ -1,7 +1,6 @@
 package com.michael.documentmanagementsystem.config.security;
 
 import com.michael.documentmanagementsystem.config.filter.JwtFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -31,10 +30,15 @@ import static org.springframework.http.HttpHeaders.*;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private UserDetailsService userDetailsService;
-    @Autowired
-    private JwtFilter jwtFilter;
+    private final UserDetailsService userDetailsService;
+    private final JwtFilter jwtFilter;
+    private final UserAuthorization userAuthorization;
+
+    public SecurityConfig(UserDetailsService userDetailsService, JwtFilter jwtFilter, UserAuthorization userAuthorization) {
+        this.userDetailsService = userDetailsService;
+        this.jwtFilter = jwtFilter;
+        this.userAuthorization = userAuthorization;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -43,6 +47,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("login", "register").permitAll()
+                        .requestMatchers("/workspaces/**").access(this.userAuthorization)
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

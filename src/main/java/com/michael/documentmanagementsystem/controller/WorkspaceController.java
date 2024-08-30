@@ -1,17 +1,23 @@
 package com.michael.documentmanagementsystem.controller;
 
 import com.michael.documentmanagementsystem.dto.WorkspaceDto;
+import com.michael.documentmanagementsystem.model.User;
 import com.michael.documentmanagementsystem.service.WorkspaceService;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.authorization.AuthorizationResult;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.FileSystemException;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -21,7 +27,9 @@ public class WorkspaceController {
     private final WorkspaceService workspaceService;
 
     @PostMapping("/workspaces/{nid}")
-    public ResponseEntity<WorkspaceDto> createWorkspace(@RequestBody WorkspaceDto workspace, @PathVariable("nid") Long nid) throws FileSystemException {
+    public ResponseEntity<WorkspaceDto> createWorkspace(@RequestBody WorkspaceDto workspace,
+                                                        @PathVariable("nid") Long nid)
+            throws Exception {
         return new ResponseEntity<>(workspaceService.createWorkspace(workspace, nid), HttpStatus.CREATED);
     }
 
@@ -29,6 +37,8 @@ public class WorkspaceController {
     public ResponseEntity<List<WorkspaceDto>> getWorkspacesByNID(@PathVariable("nid") Long nid) {
         return new ResponseEntity<>(workspaceService.getWorkspacesByNID(nid), HttpStatus.OK);
     }
+
+    //Todo: get workspace by ID
 
     //Todo: update workspace
     /*@PutMapping("/workspaces/{nid}/{workspaceId}")
@@ -66,6 +76,7 @@ public class WorkspaceController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    //Todo: get all files by NID
     /*@GetMapping("/workspaces/{nid}/{workspacesId}/files")
     public ResponseEntity<?> downloadFile(@PathVariable String fid) throws IOException {
         Pair<byte[], String> pair = workspaceService.downloadFile(fid);
