@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
@@ -62,6 +61,10 @@ public class WorkspaceService {
     public List<WorkspaceDto> getWorkspacesByNID(Long NID) {
         List<Workspace> workspaces = workspaceRepository.findAllByUserNID(NID);
         List<Workspace> result = workspaces.stream().filter(workspace -> !workspace.isDeleted()).toList();
+
+        for (Workspace workspace : result)
+            workspace.getDocuments().removeIf(Document::isDeleted);
+
         return workspaceMapper.ToDtos(result);
     }
 
@@ -81,16 +84,20 @@ public class WorkspaceService {
             return false;
         else {
             workspace.setDeleted(true);
+            for (Document document : workspace.getDocuments()) {
+                documentRepository.findByIdAndWorkspaceIdAndUserNID(document.getId(), workspaceId, nid).setDeleted(true);
+                document.setDeleted(true);
+            }
             workspaceRepository.save(workspace);
             return true;
         }
     }
 
-    public boolean uploadFile(MultipartFile file, Long nid, String workspaceId) throws IOException {
+    public boolean uploadDocument(MultipartFile file, Long nid, String workspaceId) throws IOException {
 
         Workspace workspace = workspaceRepository.findByIdAndUser_NID(workspaceId, nid);
 
-        if (workspace == null)
+        if (workspace == null || workspace.isDeleted())
             throw new IllegalStateException("no such workspace or user");
 
         Document savedDocument = documentRepository.save(Document.builder()
@@ -110,19 +117,38 @@ public class WorkspaceService {
         return true;
     }
 
-    public Pair<byte[], String> downloadFile(Long nid,
-                                             String workspaceId,
-                                             String fid)
+    public Pair<byte[], String> downloadDocument(Long nid,
+                                                 String workspaceId,
+                                                 String fid)
             throws IOException {
         com.michael.documentmanagementsystem.model.Document document
                 = this.documentRepository.findByIdAndWorkspaceIdAndUserNID(fid, workspaceId, nid);
 
-        if (document == null)
+        if (document == null || document.isDeleted())
             return new Pair<>(null, null);
         else {
             String filePath = document.getPath();
             return new Pair<>(Files.readAllBytes(new java.io.File(filePath).toPath()), document.getType());
         }
 
+    }
+
+    public boolean deleteDocument(Long nid, String workspaceId, String fid) {
+        Document document = documentRepository.findByIdAndWorkspaceIdAndUserNID(fid, workspaceId, nid);
+
+        if (document == null || document.isDeleted())
+            return false;
+
+        Workspace workspace = workspaceRepository.findByIdAndUser_NID(workspaceId, nid);
+
+        for (Document d : workspace.getDocuments()) {
+            if (d.getId().equals(document.getId()))
+                d.setDeleted(true);
+        }
+
+        document.setDeleted(true);
+        workspaceRepository.save(workspace);
+        documentRepository.save(document);
+        return true;
     }
 }

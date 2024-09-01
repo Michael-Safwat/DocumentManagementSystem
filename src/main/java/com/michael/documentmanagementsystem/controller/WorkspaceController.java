@@ -1,23 +1,17 @@
 package com.michael.documentmanagementsystem.controller;
 
 import com.michael.documentmanagementsystem.dto.WorkspaceDto;
-import com.michael.documentmanagementsystem.model.User;
 import com.michael.documentmanagementsystem.service.WorkspaceService;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authorization.AuthorizationDeniedException;
-import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.FileSystemException;
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -28,7 +22,7 @@ public class WorkspaceController {
 
     @PostMapping("/workspaces/{nid}")
     public ResponseEntity<WorkspaceDto> createWorkspace(@RequestBody WorkspaceDto workspace,
-                                                        @PathVariable("nid") Long nid)
+                                                        @PathVariable("nid") Long nid, Authentication authentication)
             throws Exception {
         return new ResponseEntity<>(workspaceService.createWorkspace(workspace, nid), HttpStatus.CREATED);
     }
@@ -65,11 +59,11 @@ public class WorkspaceController {
     }
 
     @PostMapping("/workspaces/{nid}/{workspaceId}/files")
-    public ResponseEntity<HttpStatus> uploadFile(@RequestParam("file") MultipartFile file,
-                                                 @PathVariable("nid") Long nid,
-                                                 @PathVariable("workspaceId") String workspaceId) throws IOException {
+    public ResponseEntity<HttpStatus> uploadDocument(@RequestParam("file") MultipartFile file,
+                                                     @PathVariable("nid") Long nid,
+                                                     @PathVariable("workspaceId") String workspaceId) throws IOException {
 
-        boolean result = workspaceService.uploadFile(file, nid, workspaceId);
+        boolean result = workspaceService.uploadDocument(file, nid, workspaceId);
         if (result)
             return new ResponseEntity<>(HttpStatus.OK);
         else
@@ -89,12 +83,12 @@ public class WorkspaceController {
     }*/
 
     @GetMapping("/workspaces/{nid}/{workspaceId}/files/{fid}")
-    public ResponseEntity<?> downloadFile(@PathVariable("nid") Long nid,
-                                          @PathVariable("workspaceId") String workspaceId,
-                                          @PathVariable("fid") String fid)
+    public ResponseEntity<?> downloadDocument(@PathVariable("nid") Long nid,
+                                              @PathVariable("workspaceId") String workspaceId,
+                                              @PathVariable("fid") String fid)
             throws IOException {
 
-        Pair<byte[], String> pair = workspaceService.downloadFile(nid, workspaceId, fid);
+        Pair<byte[], String> pair = workspaceService.downloadDocument(nid, workspaceId, fid);
 
         if (pair.a == null && pair.b == null)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -105,5 +99,15 @@ public class WorkspaceController {
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.valueOf(type))
                 .body(data);
+    }
+
+    @DeleteMapping("/workspaces/{nid}/{workspaceId}/files/{fid}")
+    public ResponseEntity<HttpStatus> deleteDocument(@PathVariable("nid") Long nid,
+                                                     @PathVariable("workspaceId") String workspaceId,
+                                                     @PathVariable("fid") String fid) {
+        boolean result = workspaceService.deleteDocument(nid, workspaceId, fid);
+        if (result)
+            return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

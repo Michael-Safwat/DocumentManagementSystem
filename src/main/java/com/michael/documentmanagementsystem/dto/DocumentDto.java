@@ -4,14 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class WorkspaceDto {
+public class DocumentDto {
     private String id;
+    private String workspaceId;
     private String name;
-    private UserDto user;
-    private List<DocumentDto> documents;
+    private String type;
+    private Long userNID;
 }
