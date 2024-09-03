@@ -8,6 +8,8 @@ import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,28 +23,31 @@ public class WorkspaceController {
 
     private final WorkspaceService workspaceService;
 
-    @PostMapping("/workspaces/{nid}")
-    public ResponseEntity<WorkspaceDto> createWorkspace(@RequestBody @Validated(WorkspaceCreation.class) WorkspaceDto workspace,
-                                                        @PathVariable("nid") Long nid)
+    @PostMapping("/workspaces")
+    public ResponseEntity<WorkspaceDto> createWorkspace(@RequestBody @Validated(WorkspaceCreation.class)
+                                                            WorkspaceDto workspace,
+                                                        Authentication authentication)
             throws Exception {
-        return new ResponseEntity<>(workspaceService.createWorkspace(workspace, nid), HttpStatus.CREATED);
+        return new ResponseEntity<>(workspaceService.createWorkspace(workspace,authentication), HttpStatus.CREATED);
     }
 
-    @GetMapping("/workspaces/{nid}")
-    public ResponseEntity<List<WorkspaceDto>> getWorkspacesByNID(@PathVariable("nid") Long nid) {
-        return new ResponseEntity<>(workspaceService.getWorkspacesByNID(nid), HttpStatus.OK);
+    @GetMapping("/workspaces")
+    public ResponseEntity<List<WorkspaceDto>> getWorkspacesByNID(Authentication authentication) {
+        return new ResponseEntity<>(workspaceService.getWorkspacesByNID(authentication), HttpStatus.OK);
     }
 
-    @GetMapping("/workspaces/{nid}/{workspaceId}")
-    public ResponseEntity<WorkspaceDto> getWorkspaceById(@PathVariable("workspaceId") String workspaceId)
-    {
-        return new ResponseEntity<>(workspaceService.getWorkspacesById(workspaceId),HttpStatus.OK);
+    @GetMapping("/workspaces/{workspaceId}")
+    public ResponseEntity<WorkspaceDto> getWorkspaceById(@PathVariable("workspaceId") String workspaceId,
+                                                         Authentication authentication) {
+        return new ResponseEntity<>(workspaceService.getWorkspacesById(workspaceId, authentication), HttpStatus.OK);
     }
 
-    @PutMapping("/workspaces/{nid}/{workspaceId}")
-    public ResponseEntity<HttpStatus> updateWorkspace(@PathVariable String workspaceId, @RequestBody WorkspaceDto workspaceDto) {
+    @PutMapping("/workspaces/{workspaceId}")
+    public ResponseEntity<HttpStatus> updateWorkspace(@PathVariable String workspaceId,
+                                                      @RequestBody WorkspaceDto workspaceDto,
+                                                      Authentication authentication) {
         HttpStatus httpStatus;
-        Boolean result = workspaceService.updateWorkspace(workspaceId,workspaceDto);
+        Boolean result = workspaceService.updateWorkspace(workspaceId, workspaceDto, authentication);
 
         if (result)
             httpStatus = HttpStatus.OK;
@@ -52,21 +57,22 @@ public class WorkspaceController {
         return new ResponseEntity<>(httpStatus);
     }
 
-    @DeleteMapping("/workspaces/{nid}/{workspaceId}")
-    public ResponseEntity<HttpStatus> deleteWorkspace(@PathVariable("workspaceId") String workspaceId) {
-        boolean result = workspaceService.deleteWorkspace(workspaceId);
+    @DeleteMapping("/workspaces/{workspaceId}")
+    public ResponseEntity<HttpStatus> deleteWorkspace(@PathVariable("workspaceId") String workspaceId,
+                                                      Authentication authentication) {
+        boolean result = workspaceService.deleteWorkspace(workspaceId, authentication);
         if (result)
             return new ResponseEntity<>(HttpStatus.OK);
         else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping("/workspaces/{nid}/{workspaceId}/files")
+    @PostMapping("/workspaces/{workspaceId}/files")
     public ResponseEntity<HttpStatus> uploadDocument(@RequestParam("file") MultipartFile file,
-                                                     @PathVariable("nid") Long nid,
-                                                     @PathVariable("workspaceId") String workspaceId) throws IOException {
+                                                     @PathVariable("workspaceId") String workspaceId,
+                                                     Authentication authentication) throws IOException {
 
-        boolean result = workspaceService.uploadDocument(file, nid, workspaceId);
+        boolean result = workspaceService.uploadDocument(file, workspaceId, authentication);
         if (result)
             return new ResponseEntity<>(HttpStatus.OK);
         else
@@ -85,13 +91,13 @@ public class WorkspaceController {
                 .body(data);
     }*/
 
-    @GetMapping("/workspaces/{nid}/{workspaceId}/files/{fid}")
-    public ResponseEntity<?> downloadDocument(@PathVariable("nid") Long nid,
-                                              @PathVariable("workspaceId") String workspaceId,
-                                              @PathVariable("fid") String fid)
+    @GetMapping("/workspaces/{workspaceId}/files/{fid}")
+    public ResponseEntity<?> downloadDocument(@PathVariable("workspaceId") String workspaceId,
+                                              @PathVariable("fid") String fid,
+                                              Authentication authentication)
             throws IOException {
 
-        Pair<byte[], String> pair = workspaceService.downloadDocument(nid, workspaceId, fid);
+        Pair<byte[], String> pair = workspaceService.downloadDocument(workspaceId, fid, authentication);
 
         if (pair.a == null && pair.b == null)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -104,11 +110,11 @@ public class WorkspaceController {
                 .body(data);
     }
 
-    @DeleteMapping("/workspaces/{nid}/{workspaceId}/files/{fid}")
-    public ResponseEntity<HttpStatus> deleteDocument(@PathVariable("nid") Long nid,
-                                                     @PathVariable("workspaceId") String workspaceId,
-                                                     @PathVariable("fid") String fid) {
-        boolean result = workspaceService.deleteDocument(nid, workspaceId, fid);
+    @DeleteMapping("/workspaces/{workspaceId}/files/{fid}")
+    public ResponseEntity<HttpStatus> deleteDocument(@PathVariable("workspaceId") String workspaceId,
+                                                     @PathVariable("fid") String fid,
+                                                     Authentication authentication) {
+        boolean result = workspaceService.deleteDocument(workspaceId, fid, authentication);
         if (result)
             return new ResponseEntity<>(HttpStatus.OK);
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);

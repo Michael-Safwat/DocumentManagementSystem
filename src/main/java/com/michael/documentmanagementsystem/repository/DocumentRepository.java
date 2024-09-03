@@ -5,5 +5,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface DocumentRepository extends MongoRepository<com.michael.documentmanagementsystem.model.Document, String> {
 
-    Document findByIdAndWorkspaceIdAndUserNID(String id, String workspaceId, Long userNID);
+    Document findByIdAndWorkspaceId(String id, String workspaceId);
 }

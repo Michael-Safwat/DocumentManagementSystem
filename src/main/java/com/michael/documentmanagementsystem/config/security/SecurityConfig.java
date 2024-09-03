@@ -32,12 +32,10 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final JwtFilter jwtFilter;
-    private final UserAuthorization userAuthorization;
 
-    public SecurityConfig(UserDetailsService userDetailsService, JwtFilter jwtFilter, UserAuthorization userAuthorization) {
+    public SecurityConfig(UserDetailsService userDetailsService, JwtFilter jwtFilter) {
         this.userDetailsService = userDetailsService;
         this.jwtFilter = jwtFilter;
-        this.userAuthorization = userAuthorization;
     }
 
     @Bean
@@ -47,7 +45,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("login", "register").permitAll()
-                        .requestMatchers("/workspaces/**").access(this.userAuthorization)
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
