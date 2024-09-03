@@ -2,12 +2,13 @@ package com.michael.documentmanagementsystem.controller;
 
 import com.michael.documentmanagementsystem.dto.WorkspaceDto;
 import com.michael.documentmanagementsystem.service.WorkspaceService;
+import com.michael.documentmanagementsystem.validationgroups.WorkspaceCreation;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,8 +22,8 @@ public class WorkspaceController {
     private final WorkspaceService workspaceService;
 
     @PostMapping("/workspaces/{nid}")
-    public ResponseEntity<WorkspaceDto> createWorkspace(@RequestBody WorkspaceDto workspace,
-                                                        @PathVariable("nid") Long nid, Authentication authentication)
+    public ResponseEntity<WorkspaceDto> createWorkspace(@RequestBody @Validated(WorkspaceCreation.class) WorkspaceDto workspace,
+                                                        @PathVariable("nid") Long nid)
             throws Exception {
         return new ResponseEntity<>(workspaceService.createWorkspace(workspace, nid), HttpStatus.CREATED);
     }
@@ -32,26 +33,28 @@ public class WorkspaceController {
         return new ResponseEntity<>(workspaceService.getWorkspacesByNID(nid), HttpStatus.OK);
     }
 
-    //Todo: get workspace by ID
+    @GetMapping("/workspaces/{nid}/{workspaceId}")
+    public ResponseEntity<WorkspaceDto> getWorkspaceById(@PathVariable("workspaceId") String workspaceId)
+    {
+        return new ResponseEntity<>(workspaceService.getWorkspacesById(workspaceId),HttpStatus.OK);
+    }
 
-    //Todo: update workspace
-    /*@PutMapping("/workspaces/{nid}/{workspaceId}")
-    public ResponseEntity<Boolean> updateWorkspace(@PathVariable String workspaceId, @RequestBody WorkspaceDto workspaceDto) {
+    @PutMapping("/workspaces/{nid}/{workspaceId}")
+    public ResponseEntity<HttpStatus> updateWorkspace(@PathVariable String workspaceId, @RequestBody WorkspaceDto workspaceDto) {
         HttpStatus httpStatus;
-        Boolean result = workspaceService.updateWorkspace(workspaceDto);
+        Boolean result = workspaceService.updateWorkspace(workspaceId,workspaceDto);
 
         if (result)
             httpStatus = HttpStatus.OK;
         else
             httpStatus = HttpStatus.NOT_FOUND;
 
-        return new ResponseEntity<>(result, httpStatus);
-    }*/
+        return new ResponseEntity<>(httpStatus);
+    }
 
     @DeleteMapping("/workspaces/{nid}/{workspaceId}")
-    public ResponseEntity<HttpStatus> deleteWorkspace(@PathVariable("nid") Long nid,
-                                                      @PathVariable("workspaceId") String workspaceId) {
-        boolean result = workspaceService.deleteWorkspace(nid, workspaceId);
+    public ResponseEntity<HttpStatus> deleteWorkspace(@PathVariable("workspaceId") String workspaceId) {
+        boolean result = workspaceService.deleteWorkspace(workspaceId);
         if (result)
             return new ResponseEntity<>(HttpStatus.OK);
         else

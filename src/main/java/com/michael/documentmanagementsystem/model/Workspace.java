@@ -19,8 +19,11 @@ public class Workspace {
     private String id;
     @Indexed(unique = true)
     private String name;
+    private String savedName;
+    private String description;
     private String path;
-    private User user;
-    private List<Document> documents;
+    private Long userNID;
+    private List<String> documentsIds;
     private boolean isDeleted;
+    private String createdAt;
 }
