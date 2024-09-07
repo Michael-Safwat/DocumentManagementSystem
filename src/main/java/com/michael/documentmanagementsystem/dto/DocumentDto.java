@@ -13,4 +13,5 @@ public class DocumentDto {
     private String name;
     private String type;
     private Long userNID;
+    private String createdAt;
 }

@@ -27,6 +27,18 @@ public class UserService {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
 
+   /* public UserService(UserRepository userRepository,
+                       AuthenticationManager authenticationManager,
+                       JwtService jwtService,
+                       UserMapper userMapper)
+    {
+        this.userRepository = userRepository;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+        this.userMapper = userMapper;
+        this.bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
+    }*/
+
     public UserDto register(UserDto userDto) {
         userDto.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
         User user = userMapper.toEntity(userDto);
@@ -49,5 +61,10 @@ public class UserService {
             return userDto;
         } else
             throw new UsernameNotFoundException("User Not Found");
+    }
+
+    public UserDto getUser(String userEmail) {
+        User user = userRepository.findByEmail(userEmail);
+        return userMapper.toDto(user);
     }
 }

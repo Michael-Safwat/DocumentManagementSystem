@@ -1,6 +1,8 @@
 package com.michael.documentmanagementsystem.service;
 
+import com.michael.documentmanagementsystem.dto.DocumentDto;
 import com.michael.documentmanagementsystem.dto.WorkspaceDto;
+import com.michael.documentmanagementsystem.mapper.DocumentMapper;
 import com.michael.documentmanagementsystem.mapper.WorkspaceMapper;
 import com.michael.documentmanagementsystem.model.Document;
 import com.michael.documentmanagementsystem.model.User;
@@ -10,6 +12,7 @@ import com.michael.documentmanagementsystem.repository.UserRepository;
 import com.michael.documentmanagementsystem.repository.WorkspaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.Authentication;
@@ -23,6 +26,7 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -37,10 +41,11 @@ public class WorkspaceService {
     private final WorkspaceMapper workspaceMapper;
     private final UserRepository userRepository;
     private final DocumentRepository documentRepository;
+    private final DocumentMapper documentMapper;
 
-    public WorkspaceDto createWorkspace(WorkspaceDto workspaceDto,Authentication authentication) throws FileSystemException {
+    public WorkspaceDto createWorkspace(WorkspaceDto workspaceDto, Authentication authentication) throws FileSystemException {
 
-        Long nid = (((User)authentication.getPrincipal())) .getNID();
+        Long nid = (((User) authentication.getPrincipal())).getNID();
         //replace all spaces and replace them with underscores(not good with the machine)
         workspaceDto.setName(workspaceDto.getName().replaceAll(" ", "_"));
         Workspace workspace = workspaceMapper.toEntity(workspaceDto);
@@ -58,7 +63,7 @@ public class WorkspaceService {
         workspace.setPath(PATH + File.separator + nid + File.separator + workspace.getSavedName());
         workspace.setDocumentsIds(Collections.emptyList());
         workspace.setUserNID(nid);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
         workspace.setCreatedAt(date.format(formatter));
 
         Workspace savedWorkspace = workspaceRepository.save(workspace);
@@ -108,14 +113,13 @@ public class WorkspaceService {
 
     public boolean deleteWorkspace(String workspaceId, Authentication authentication) {
         Optional<Workspace> workspace = workspaceRepository.findById(workspaceId);
-        if (workspace.isEmpty())
+        if (workspace.isEmpty() || workspace.get().isDeleted())
             return false;
         else if (!workspace.get().getUserNID().equals(((User) authentication.getPrincipal()).getNID())) {
             AuthorizationDecision authorizationDecision = new AuthorizationDecision(false);
             throw new AuthorizationDeniedException("Not Authorized", authorizationDecision);
         } else {
             workspace.get().setDeleted(true);
-            workspace.get().setName(workspace.get().getSavedName());
             for (String documentId : workspace.get().getDocumentsIds()) {
                 Document document = documentRepository.findById(documentId)
                         .orElseThrow(() -> new IllegalStateException("no such document found"));
@@ -125,12 +129,9 @@ public class WorkspaceService {
             workspaceRepository.save(workspace.get());
             return true;
         }
-
     }
 
-    public boolean uploadDocument(MultipartFile file,
-                                  String workspaceId,
-                                  Authentication authentication)
+    public boolean uploadDocument(MultipartFile file, String workspaceId, Authentication authentication)
             throws IOException {
 
         Optional<Workspace> workspace = workspaceRepository.findById(workspaceId);
@@ -150,7 +151,7 @@ public class WorkspaceService {
                 .userNID(((User) authentication.getPrincipal()).getNID())
                 .path(workspace.get().getPath() + java.io.File.separator + file.getOriginalFilename())
                 .isDeleted(false)
-                .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")))
+                .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss")))
                 .build());
 
         file.transferTo(new java.io.File(savedDocument.getPath()));
@@ -160,9 +161,18 @@ public class WorkspaceService {
         return true;
     }
 
-    public Pair<byte[], String> downloadDocument(String workspaceId,
-                                                 String fid,
-                                                 Authentication authentication)
+    public List<DocumentDto> getAllDocuments(String workspaceId, Authentication authentication) {
+        Optional<Workspace> workspace = workspaceRepository.findById(workspaceId);
+        if (workspace.isEmpty() || workspace.get().isDeleted())
+            throw new IllegalStateException("no such workspace or user");
+        if (!workspace.get().getUserNID().equals(((User) authentication.getPrincipal()).getNID()))
+            throw new IllegalStateException("Not Authorized");
+
+        List<Document> documents = documentRepository.findAllByWorkspaceId(workspaceId);
+        return documentMapper.toDtos(documents);
+    }
+
+    public Pair<byte[], String> downloadDocument(String workspaceId, String fid, Authentication authentication)
             throws IOException {
         com.michael.documentmanagementsystem.model.Document document
                 = this.documentRepository.findByIdAndWorkspaceId(fid, workspaceId);

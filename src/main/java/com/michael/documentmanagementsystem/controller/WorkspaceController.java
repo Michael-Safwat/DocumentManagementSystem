@@ -1,5 +1,6 @@
 package com.michael.documentmanagementsystem.controller;
 
+import com.michael.documentmanagementsystem.dto.DocumentDto;
 import com.michael.documentmanagementsystem.dto.WorkspaceDto;
 import com.michael.documentmanagementsystem.service.WorkspaceService;
 import com.michael.documentmanagementsystem.validationgroups.WorkspaceCreation;
@@ -8,7 +9,6 @@ import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +24,10 @@ public class WorkspaceController {
     private final WorkspaceService workspaceService;
 
     @PostMapping("/workspaces")
-    public ResponseEntity<WorkspaceDto> createWorkspace(@RequestBody @Validated(WorkspaceCreation.class)
-                                                            WorkspaceDto workspace,
+    public ResponseEntity<WorkspaceDto> createWorkspace(@RequestBody @Validated(WorkspaceCreation.class) WorkspaceDto workspace,
                                                         Authentication authentication)
             throws Exception {
-        return new ResponseEntity<>(workspaceService.createWorkspace(workspace,authentication), HttpStatus.CREATED);
+        return new ResponseEntity<>(workspaceService.createWorkspace(workspace, authentication), HttpStatus.CREATED);
     }
 
     @GetMapping("/workspaces")
@@ -79,17 +78,11 @@ public class WorkspaceController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    //Todo: get all files by NID
-    /*@GetMapping("/workspaces/{nid}/{workspacesId}/files")
-    public ResponseEntity<?> downloadFile(@PathVariable String fid) throws IOException {
-        Pair<byte[], String> pair = workspaceService.downloadFile(fid);
-        byte[] data = pair.a;
-        String type = pair.b;
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.valueOf(type))
-                .body(data);
-    }*/
+    @GetMapping("/workspaces/{workspacesId}/files")
+    public ResponseEntity<List<DocumentDto>> getAllDocuments(@PathVariable String workspacesId,
+                                                             Authentication authentication) {
+        return new ResponseEntity<>(workspaceService.getAllDocuments(workspacesId, authentication), HttpStatus.OK);
+    }
 
     @GetMapping("/workspaces/{workspaceId}/files/{fid}")
     public ResponseEntity<?> downloadDocument(@PathVariable("workspaceId") String workspaceId,

@@ -9,12 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,5 +33,11 @@ public class UserController {
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add(HttpHeaders.AUTHORIZATION, userDto.getToken());
         return new ResponseEntity<>(userDto, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/users/{userEmail}")
+    @PreAuthorize("#userEmail == authentication.principal.email")
+    public ResponseEntity<UserDto> getUser(@PathVariable String userEmail) {
+        return new ResponseEntity<>(userService.getUser(userEmail), HttpStatus.OK);
     }
 }
