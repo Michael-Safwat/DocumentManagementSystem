@@ -26,10 +26,7 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -80,10 +77,11 @@ public class WorkspaceService {
     }
 
     public List<WorkspaceDto> getWorkspacesByNID(Authentication authentication) {
-        List<Workspace> workspaces = workspaceRepository.findAllByUserNID(((User) authentication.getPrincipal()).getNID());
-        List<Workspace> result = workspaces.stream().filter(workspace -> !workspace.isDeleted()).toList();
-
-        return workspaceMapper.ToDtos(result);
+        List<Workspace> workspaces = workspaceRepository.findAllByUserNID(((User) authentication.getPrincipal()).getNID())
+                .stream()
+                .filter(workspace -> !workspace.isDeleted())
+                .toList();
+        return workspaceMapper.ToDtos(workspaces);
     }
 
     public WorkspaceDto getWorkspacesById(String workspaceId, Authentication authentication) {
@@ -168,7 +166,10 @@ public class WorkspaceService {
         if (!workspace.get().getUserNID().equals(((User) authentication.getPrincipal()).getNID()))
             throw new IllegalStateException("Not Authorized");
 
-        List<Document> documents = documentRepository.findAllByWorkspaceId(workspaceId);
+        List<Document> documents = documentRepository.findAllByWorkspaceId(workspaceId)
+                .stream()
+                .filter(document -> !document.isDeleted())
+                .toList();
         return documentMapper.toDtos(documents);
     }
 
@@ -189,6 +190,24 @@ public class WorkspaceService {
             return new Pair<>(Files.readAllBytes(new java.io.File(filePath).toPath()), document.getType());
         }
 
+    }
+
+    public String previewDocument(String workspaceId, String fid, Authentication authentication) throws IOException {
+        com.michael.documentmanagementsystem.model.Document document
+                = this.documentRepository.findByIdAndWorkspaceId(fid, workspaceId);
+
+        if (document != null && !(document.getUserNID().equals(((User) authentication.getPrincipal()).getNID()))) {
+            AuthorizationDecision authorizationDecision = new AuthorizationDecision(false);
+            throw new AuthorizationDeniedException("Not Authorized", authorizationDecision);
+        }
+        if (document == null || document.isDeleted())
+            return "";
+        else
+        {
+            String filePath = document.getPath();
+            byte[] fileContent  = Files.readAllBytes(new java.io.File(filePath).toPath());
+            return Base64.getEncoder().encodeToString(fileContent);
+        }
     }
 
     public boolean deleteDocument(String workspaceId, String fid, Authentication authentication) {

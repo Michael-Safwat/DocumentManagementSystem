@@ -103,6 +103,14 @@ public class WorkspaceController {
                 .body(data);
     }
 
+    @GetMapping("/workspaces/{workspaceId}/filesPreview/{fid}")
+    public ResponseEntity<String> previewDocument(@PathVariable("workspaceId") String workspaceId,
+                                             @PathVariable("fid")String fid,
+                                             Authentication authentication) throws IOException {
+
+        return new ResponseEntity<>(workspaceService.previewDocument(workspaceId,fid,authentication),HttpStatus.OK);
+    }
+
     @DeleteMapping("/workspaces/{workspaceId}/files/{fid}")
     public ResponseEntity<HttpStatus> deleteDocument(@PathVariable("workspaceId") String workspaceId,
                                                      @PathVariable("fid") String fid,
