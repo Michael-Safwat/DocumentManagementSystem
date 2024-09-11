@@ -76,8 +76,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
         config.setAllowedHeaders(Arrays.asList(
-                HttpHeaders
-                        .ORIGIN,
+                HttpHeaders.ORIGIN,
                 CONTENT_TYPE,
                 ACCEPT,
                 AUTHORIZATION
@@ -89,6 +88,7 @@ public class SecurityConfig {
                 "PUT",
                 "PATCH"
         ));
+        config.addExposedHeader(HttpHeaders.CONTENT_DISPOSITION);
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
