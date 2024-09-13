@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -24,6 +25,8 @@ public class Workspace {
     private String path;
     private Long userNID;
     private List<String> documentsIds;
+    private String parentId;
+    private List<String> directoriesIds;
     private boolean isDeleted;
     private String createdAt;
 }

@@ -19,5 +19,7 @@ public class WorkspaceDto {
     private String description;
     private Long userNID;
     private List<String> documentsIds;
+    private String parentId;
+    private List<String> directoriesIds;
     private String createdAt;
 }

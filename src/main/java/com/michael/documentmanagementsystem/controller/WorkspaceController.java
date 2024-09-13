@@ -2,7 +2,7 @@ package com.michael.documentmanagementsystem.controller;
 
 import com.michael.documentmanagementsystem.dto.DocumentDto;
 import com.michael.documentmanagementsystem.dto.WorkspaceDto;
-import com.michael.documentmanagementsystem.service.UtilService;
+import com.michael.documentmanagementsystem.service.util.UtilService;
 import com.michael.documentmanagementsystem.service.WorkspaceService;
 import com.michael.documentmanagementsystem.validationgroups.WorkspaceCreation;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.FileSystemException;
 import java.util.List;
 
 @RestController
@@ -32,9 +33,9 @@ public class WorkspaceController {
         return new ResponseEntity<>(workspaceService.createWorkspace(workspace,utilService.getNID(authentication)), HttpStatus.CREATED);
     }
 
-    @GetMapping()
-    public ResponseEntity<List<WorkspaceDto>> getWorkspacesByNID(Authentication authentication) {
-        return new ResponseEntity<>(workspaceService.getWorkspacesByNID(utilService.getNID(authentication)), HttpStatus.OK);
+    @GetMapping("/all/{parentId}")
+    public ResponseEntity<List<WorkspaceDto>> getAllWorkspaces(@PathVariable String parentId) {
+        return new ResponseEntity<>(workspaceService.getAllWorkspaces(parentId), HttpStatus.OK);
     }
 
     @GetMapping("/{workspaceId}")
@@ -66,6 +67,13 @@ public class WorkspaceController {
             return new ResponseEntity<>(HttpStatus.OK);
         else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/directories/{parentId}")
+    @PreAuthorize("@utilService.isWorkspaceOwnerAndAvailable(authentication,#parentID)")
+    public ResponseEntity<WorkspaceDto> createDirectory(@PathVariable("parentId") String parentID,
+                                            @RequestBody WorkspaceDto workspaceDto) throws FileSystemException {
+        return new ResponseEntity<>(workspaceService.createDirectory(parentID,workspaceDto),HttpStatus.OK);
     }
 
     @PostMapping("/{workspaceId}/documents")

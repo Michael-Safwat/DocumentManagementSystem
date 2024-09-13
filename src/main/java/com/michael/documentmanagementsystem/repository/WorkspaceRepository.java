@@ -11,5 +11,5 @@ import java.util.List;
 
 @Repository
 public interface WorkspaceRepository extends MongoRepository<Workspace, String> {
-    List<Workspace> findAllByUserNID(Long NID);
+    List<Workspace> findAllByParentId(String parentId);
 }

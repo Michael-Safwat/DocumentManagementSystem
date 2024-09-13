@@ -10,6 +10,7 @@ import com.michael.documentmanagementsystem.model.Workspace;
 import com.michael.documentmanagementsystem.repository.DocumentRepository;
 import com.michael.documentmanagementsystem.repository.UserRepository;
 import com.michael.documentmanagementsystem.repository.WorkspaceRepository;
+import com.michael.documentmanagementsystem.service.util.UtilService;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,38 +39,40 @@ public class WorkspaceService {
     private final WorkspaceMapper workspaceMapper;
     private final DocumentRepository documentRepository;
     private final DocumentMapper documentMapper;
+    private final UtilService utilService;
 
     public WorkspaceDto createWorkspace(WorkspaceDto workspaceDto, Long userNID) throws FileSystemException {
 
-        //replace all spaces and replace them with underscores(not good with the machine)
-        workspaceDto.setName(workspaceDto.getName().replaceAll(" ", "_"));
-        Workspace workspace = workspaceMapper.toEntity(workspaceDto);
-
-        //create local name using time and date concatenation
-        LocalDateTime date = LocalDateTime.now();
-        String name = (workspaceDto.getName() + "_" + date).replaceAll(":", "_");
-
-        workspace.setSavedName(name);
-        workspace.setPath(PATH + File.separator + userNID + File.separator + workspace.getSavedName());
-        workspace.setDocumentsIds(Collections.emptyList());
+        Workspace workspace = utilService.intializeWorkspace(workspaceDto,"root");
         workspace.setUserNID(userNID);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
-        workspace.setCreatedAt(date.format(formatter));
+        workspace.setPath(PATH + File.separator + userNID + File.separator + workspace.getSavedName());
 
-        File userWorkspaces = new File(PATH + File.separator + userNID);
-        File newFile = new File(userWorkspaces, name);
-        boolean result = newFile.mkdirs();
-
-        if (!result)
-            throw new FileSystemException("error creating directory");
-
-        return workspaceMapper.toDto(workspaceRepository.save(workspace));
+        workspace = workspaceRepository.save(workspace);
+        utilService.saveOnLocalMachine(PATH + File.separator + userNID,workspace.getSavedName());
+        return workspaceMapper.toDto(workspace);
     }
 
-    public List<WorkspaceDto> getWorkspacesByNID(Long userNID) {
-        List<Workspace> workspaces = workspaceRepository.findAllByUserNID(userNID)
+    public WorkspaceDto createDirectory(String parentId,WorkspaceDto workspaceDto) throws FileSystemException {
+
+        Workspace workspace = workspaceRepository.findById(parentId).orElse(null);
+
+        Workspace directory = utilService.intializeWorkspace(workspaceDto,parentId);
+        directory.setUserNID(workspace.getUserNID());
+        directory.setPath(workspace.getPath() + File.separator + directory.getSavedName());
+
+        directory = workspaceRepository.save(directory);
+        utilService.saveOnLocalMachine(workspace.getPath(),directory.getSavedName());
+
+        workspace.getDirectoriesIds().add(directory.getId());
+        workspaceRepository.save(workspace);
+
+        return workspaceMapper.toDto(directory);
+    }
+
+    public List<WorkspaceDto> getAllWorkspaces(String parentId) {
+        List<Workspace> workspaces = workspaceRepository.findAllByParentId(parentId)
                 .stream()
-                .filter(workspace -> !workspace.isDeleted())
+                .filter(workspace -> !workspace.isDeleted() && workspace.getParentId().equals(parentId))
                 .toList();
         return workspaceMapper.ToDtos(workspaces);
     }
@@ -93,6 +96,10 @@ public class WorkspaceService {
 
         Workspace workspace = workspaceRepository.findById(workspaceId).orElse(null);
         workspace.setDeleted(true);
+
+        for(String DirectoryId: workspace.getDirectoriesIds())
+            deleteWorkspace(DirectoryId);
+
         for (String documentId : workspace.getDocumentsIds()) {
             Document document = documentRepository.findById(documentId)
                     .orElseThrow(() -> new IllegalStateException("no such document found"));
