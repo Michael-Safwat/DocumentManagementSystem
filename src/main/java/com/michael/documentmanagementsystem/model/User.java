@@ -1,6 +1,10 @@
 package com.michael.documentmanagementsystem.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,6 +13,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 @Entity(name = "users")
 public class User implements UserDetails {
 
@@ -22,61 +30,6 @@ public class User implements UserDetails {
     private String password;
     @Column(unique = true)
     private Long NID;
-
-    public User() {
-    }
-
-    public User(String firstName, String lastName, String email, String password, Long NID) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-        this.NID = NID;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Long getNID() {
-        return NID;
-    }
-
-    public void setNID(Long NID) {
-        this.NID = NID;
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -111,17 +64,5 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return "AppUser{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", NID=" + NID +
-                '}';
     }
 }

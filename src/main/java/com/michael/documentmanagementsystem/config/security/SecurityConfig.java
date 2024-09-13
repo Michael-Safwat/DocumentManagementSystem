@@ -1,7 +1,6 @@
 package com.michael.documentmanagementsystem.config.security;
 
 import com.michael.documentmanagementsystem.config.filter.JwtFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -10,6 +9,8 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -29,12 +30,16 @@ import static org.springframework.http.HttpHeaders.*;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private UserDetailsService userDetailsService;
-    @Autowired
-    private JwtFilter jwtFilter;
+    private final UserDetailsService userDetailsService;
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(UserDetailsService userDetailsService, JwtFilter jwtFilter) {
+        this.userDetailsService = userDetailsService;
+        this.jwtFilter = jwtFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -71,8 +76,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
         config.setAllowedHeaders(Arrays.asList(
-                HttpHeaders
-                        .ORIGIN,
+                HttpHeaders.ORIGIN,
                 CONTENT_TYPE,
                 ACCEPT,
                 AUTHORIZATION
@@ -84,6 +88,7 @@ public class SecurityConfig {
                 "PUT",
                 "PATCH"
         ));
+        config.addExposedHeader(HttpHeaders.CONTENT_DISPOSITION);
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
