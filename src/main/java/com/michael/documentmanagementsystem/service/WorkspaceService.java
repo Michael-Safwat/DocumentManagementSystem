@@ -69,8 +69,8 @@ public class WorkspaceService {
         return workspaceMapper.toDto(directory);
     }
 
-    public List<WorkspaceDto> getAllWorkspaces(String parentId) {
-        List<Workspace> workspaces = workspaceRepository.findAllByParentId(parentId)
+    public List<WorkspaceDto> getAllWorkspaces(String parentId,Long userNID){
+        List<Workspace> workspaces = workspaceRepository.findAllByUserNIDAndParentId(userNID,parentId)
                 .stream()
                 .filter(workspace -> !workspace.isDeleted() && workspace.getParentId().equals(parentId))
                 .toList();

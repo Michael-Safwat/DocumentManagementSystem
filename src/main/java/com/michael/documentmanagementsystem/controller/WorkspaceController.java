@@ -34,8 +34,8 @@ public class WorkspaceController {
     }
 
     @GetMapping("/all/{parentId}")
-    public ResponseEntity<List<WorkspaceDto>> getAllWorkspaces(@PathVariable String parentId) {
-        return new ResponseEntity<>(workspaceService.getAllWorkspaces(parentId), HttpStatus.OK);
+    public ResponseEntity<List<WorkspaceDto>> getAllWorkspaces(@PathVariable String parentId,Authentication authentication) {
+        return new ResponseEntity<>(workspaceService.getAllWorkspaces(parentId,utilService.getNID(authentication)), HttpStatus.OK);
     }
 
     @GetMapping("/{workspaceId}")
