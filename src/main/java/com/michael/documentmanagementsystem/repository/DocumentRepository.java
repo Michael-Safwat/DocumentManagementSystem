@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface DocumentRepository extends MongoRepository<com.michael.documentmanagementsystem.model.Document, String> {
 
-    Document findByIdAndWorkspaceId(String id, String workspaceId);
+    List<Document> findAllByParentId(String workspaceId);
 
-    List<Document> findAllByWorkspaceId(String workspaceId);
+    List<Document> findByNameContainingIgnoreCaseAndParentId(String name, String workspaceId);
 }

@@ -1,14 +1,12 @@
 package com.michael.documentmanagementsystem.service;
 
-import com.michael.documentmanagementsystem.dto.DocumentDto;
+import com.michael.documentmanagementsystem.dto.DocumentDTO;
 import com.michael.documentmanagementsystem.mapper.DocumentMapper;
 import com.michael.documentmanagementsystem.model.Document;
-import com.michael.documentmanagementsystem.model.Workspace;
 import com.michael.documentmanagementsystem.repository.DocumentRepository;
-import com.michael.documentmanagementsystem.repository.WorkspaceRepository;
+import com.michael.documentmanagementsystem.service.util.UtilService;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,38 +18,35 @@ import java.util.Base64;
 @RequiredArgsConstructor
 public class DocumentService {
 
-    private final WorkspaceRepository workspaceRepository;
     private final DocumentRepository documentRepository;
+    private final DocumentMapper documentMapper;
+    private final UtilService utilService;
 
-    public Pair<byte[], Pair<String,String>> downloadDocument(String did) throws IOException {
-        Document document = this.documentRepository.findById(did).orElse(null);
+    public Pair<byte[], Pair<String, String>> downloadDocument(String did) throws IOException {
+        Document document = utilService.isDocumentOwnerAndAvailable(documentRepository.findById(did));
         String filePath = document.getPath();
-        return new Pair<>(Files.readAllBytes(new java.io.File(filePath).toPath()), new Pair<>(document.getType(),document.getName()));
+        return new Pair<>(Files.readAllBytes(new java.io.File(filePath).toPath()), new Pair<>(document.getType(), document.getName()));
     }
 
     public String previewDocument(String did) throws IOException {
 
-        Document document = this.documentRepository.findById(did).orElse(null);
+        Document document = utilService.isDocumentOwnerAndAvailable(documentRepository.findById(did));
         String filePath = document.getPath();
-        byte[] fileContent  = Files.readAllBytes(new java.io.File(filePath).toPath());
+        byte[] fileContent = Files.readAllBytes(new java.io.File(filePath).toPath());
         return Base64.getEncoder().encodeToString(fileContent);
     }
 
-    public boolean deleteDocument(String fid) {
+    public void deleteDocument(String did) {
 
-        Document document = documentRepository.findById(fid).orElse(null);
-        Workspace workspace = workspaceRepository.findById(document.getWorkspaceId()).orElse(null);
-
-        workspace.getDocumentsIds().removeIf(documentId -> documentId.equals(document.getId()));
+        Document document = utilService.isDocumentOwnerAndAvailable(documentRepository.findById(did));
         document.setDeleted(true);
-        workspaceRepository.save(workspace);
         documentRepository.save(document);
-        return true;
     }
 
-    public void updateDocument(String did, DocumentDto updatedDocument) {
-        Document document = documentRepository.findById(did).orElse(null);
+    public DocumentDTO updateDocument(String did, DocumentDTO updatedDocument) {
+        Document document = utilService.isDocumentOwnerAndAvailable(documentRepository.findById(did));
         document.setName(updatedDocument.getName());
         documentRepository.save(document);
+        return documentMapper.toDto(document);
     }
 }

@@ -19,7 +19,7 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private String secretKey = "";
+    private final String secretKey;
 
     public JwtService() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
@@ -36,7 +36,7 @@ public class JwtService {
                 .add(claims)
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 60))
+                .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 60 * 60))
                 .and()
                 .signWith(getKey())
                 .compact();

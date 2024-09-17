@@ -14,7 +14,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class UserDTO {
     private UUID id;
     @NotBlank(message = "first name can't be empty", groups = RegisterInfo.class)
     private String firstName;
@@ -26,7 +26,8 @@ public class UserDto {
     @NotBlank(message = "password can't be empty", groups = {RegisterInfo.class, LoginInfo.class})
     private String password;
     @NotBlank(message = "National ID can't be empty", groups = RegisterInfo.class)
-    @Pattern(regexp = "^\\d{16}+$", message = "National ID must be of 16 digits only", groups = RegisterInfo.class)
+    @Pattern(regexp = "^\\d{14}+$", message = "National ID must be of 16 digits only", groups = RegisterInfo.class)
     private String NID;
     private String token;
+    private String createdAt;
 }

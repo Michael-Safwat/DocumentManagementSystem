@@ -1,6 +1,6 @@
 package com.michael.documentmanagementsystem.mapper;
 
-import com.michael.documentmanagementsystem.dto.WorkspaceDto;
+import com.michael.documentmanagementsystem.dto.WorkspaceDTO;
 import com.michael.documentmanagementsystem.model.Workspace;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -10,9 +10,9 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface WorkspaceMapper {
     @Mapping(ignore = true, target = "user.password")
-    WorkspaceDto toDto(Workspace workspace);
+    WorkspaceDTO toDto(Workspace workspace);
 
-    Workspace toEntity(WorkspaceDto workspaceDto);
+    Workspace toEntity(WorkspaceDTO workspaceDto);
 
-    List<WorkspaceDto> ToDtos(List<Workspace> workspaces);
+    List<WorkspaceDTO> ToDtos(List<Workspace> workspaces);
 }

@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DocumentDto {
+public class DocumentDTO {
     private String id;
-    private String workspaceId;
+    private String parentId;
     private String name;
     private String type;
-    private Long userNID;
+    private Long owner;
     private String createdAt;
 }

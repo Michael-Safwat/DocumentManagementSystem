@@ -20,10 +20,10 @@ public class Document {
     @Id
     @GeneratedValue
     private String id;
-    private String workspaceId;
     private String name;
+    private String parentId;
     private String type;
-    private Long userNID;
+    private Long owner;
     private String path;
     private List<String> tags;
     private boolean isDeleted;

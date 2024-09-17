@@ -2,17 +2,17 @@ package com.michael.documentmanagementsystem.service;
 
 import com.michael.documentmanagementsystem.model.User;
 import com.michael.documentmanagementsystem.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

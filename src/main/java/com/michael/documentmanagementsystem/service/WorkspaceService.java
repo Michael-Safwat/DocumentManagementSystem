@@ -1,30 +1,22 @@
 package com.michael.documentmanagementsystem.service;
 
-import com.michael.documentmanagementsystem.dto.DocumentDto;
-import com.michael.documentmanagementsystem.dto.WorkspaceDto;
+import com.michael.documentmanagementsystem.dto.DocumentDTO;
+import com.michael.documentmanagementsystem.dto.WorkspaceDTO;
 import com.michael.documentmanagementsystem.mapper.DocumentMapper;
 import com.michael.documentmanagementsystem.mapper.WorkspaceMapper;
 import com.michael.documentmanagementsystem.model.Document;
-import com.michael.documentmanagementsystem.model.User;
 import com.michael.documentmanagementsystem.model.Workspace;
 import com.michael.documentmanagementsystem.repository.DocumentRepository;
-import com.michael.documentmanagementsystem.repository.UserRepository;
 import com.michael.documentmanagementsystem.repository.WorkspaceRepository;
 import com.michael.documentmanagementsystem.service.util.UtilService;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authorization.AuthorizationDecision;
-import org.springframework.security.authorization.AuthorizationDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystemException;
-import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -41,102 +33,112 @@ public class WorkspaceService {
     private final DocumentMapper documentMapper;
     private final UtilService utilService;
 
-    public WorkspaceDto createWorkspace(WorkspaceDto workspaceDto, Long userNID) throws FileSystemException {
+    public WorkspaceDTO createWorkspace(WorkspaceDTO workspaceDto) throws FileSystemException {
 
-        Workspace workspace = utilService.intializeWorkspace(workspaceDto,"root");
-        workspace.setUserNID(userNID);
-        workspace.setPath(PATH + File.separator + userNID + File.separator + workspace.getSavedName());
+        Workspace workspace = utilService.intializeWorkspace(workspaceDto, "root");
+        workspace.setPath(workspace.getName());
+        Long userNID = utilService.getNID();
+        workspace.setOwner(userNID);
+        workspace.setLocalPath(PATH + File.separator + userNID + File.separator + workspace.getSavedName());
 
         workspace = workspaceRepository.save(workspace);
-        utilService.saveOnLocalMachine(PATH + File.separator + userNID,workspace.getSavedName());
+        utilService.saveOnLocalMachine(PATH + File.separator + userNID, workspace.getSavedName());
         return workspaceMapper.toDto(workspace);
     }
 
-    public WorkspaceDto createDirectory(String parentId,WorkspaceDto workspaceDto) throws FileSystemException {
-
-        Workspace workspace = workspaceRepository.findById(parentId).orElse(null);
-
-        Workspace directory = utilService.intializeWorkspace(workspaceDto,parentId);
-        directory.setUserNID(workspace.getUserNID());
-        directory.setPath(workspace.getPath() + File.separator + directory.getSavedName());
-
-        directory = workspaceRepository.save(directory);
-        utilService.saveOnLocalMachine(workspace.getPath(),directory.getSavedName());
-
-        workspace.getDirectoriesIds().add(directory.getId());
-        workspaceRepository.save(workspace);
-
-        return workspaceMapper.toDto(directory);
-    }
-
-    public List<WorkspaceDto> getAllWorkspaces(String parentId,Long userNID){
-        List<Workspace> workspaces = workspaceRepository.findAllByUserNIDAndParentId(userNID,parentId)
+    public List<WorkspaceDTO> getAllWorkspaces(String parentId) {
+        List<Workspace> workspaces = workspaceRepository.findAllByOwnerAndParentId(utilService.getNID(), parentId)
                 .stream()
-                .filter(workspace -> !workspace.isDeleted() && workspace.getParentId().equals(parentId))
+                .filter(workspace -> !workspace.isDeleted())
                 .toList();
         return workspaceMapper.ToDtos(workspaces);
     }
 
-    public WorkspaceDto getWorkspacesById(String workspaceId) {
-
-        Workspace workspace = workspaceRepository.findById(workspaceId).orElse(null);
+    public WorkspaceDTO getWorkspacesById(String workspaceId) {
+        Workspace workspace = utilService.isWorkspaceOwnerAndAvailable(workspaceRepository.findById(workspaceId));
         return workspaceMapper.toDto(workspace);
     }
 
-    public Boolean updateWorkspace(String workspaceId, WorkspaceDto workspaceDto) {
+    public WorkspaceDTO updateWorkspace(String workspaceId, WorkspaceDTO workspaceDto) {
 
-        Workspace workspace = workspaceRepository.findById(workspaceId).orElse(null);
+        Workspace workspace = utilService.isWorkspaceOwnerAndAvailable(workspaceRepository.findById(workspaceId));
         workspace.setName(workspaceDto.getName().replaceAll(" ", "_"));
         workspace.setDescription(workspaceDto.getDescription());
         workspaceRepository.save(workspace);
-        return true;
+        return workspaceMapper.toDto(workspace);
     }
 
-    public boolean deleteWorkspace(String workspaceId) {
+    public void deleteWorkspace(String workspaceId) {
 
-        Workspace workspace = workspaceRepository.findById(workspaceId).orElse(null);
+        Workspace workspace = utilService.isWorkspaceOwnerAndAvailable(workspaceRepository.findById(workspaceId));
         workspace.setDeleted(true);
 
-        for(String DirectoryId: workspace.getDirectoriesIds())
-            deleteWorkspace(DirectoryId);
+        List<Workspace> directories = workspaceRepository.findAllByParentId(workspaceId);
+        for (Workspace directory : directories)
+            deleteWorkspace(directory.getId());
 
-        for (String documentId : workspace.getDocumentsIds()) {
-            Document document = documentRepository.findById(documentId)
-                    .orElseThrow(() -> new IllegalStateException("no such document found"));
+        List<Document> documents = documentRepository.findAllByParentId(workspaceId);
+        for (Document document : documents) {
             document.setDeleted(true);
-            documentRepository.save(document);
         }
+        documentRepository.saveAll(documents);
         workspaceRepository.save(workspace);
-        return true;
-
     }
 
-    public boolean uploadDocument(MultipartFile file, String workspaceId)
+    public WorkspaceDTO createDirectory(String parentId, WorkspaceDTO workspaceDto) throws FileSystemException {
+
+        Workspace workspace = utilService.isWorkspaceOwnerAndAvailable(workspaceRepository.findById(parentId));
+
+        Workspace directory = utilService.intializeWorkspace(workspaceDto, parentId);
+        directory.setOwner(workspace.getOwner());
+        directory.setLocalPath(workspace.getLocalPath() + File.separator + directory.getSavedName());
+        directory.setPath(workspace.getPath() + File.separator + directory.getName());
+
+        directory = workspaceRepository.save(directory);
+        utilService.saveOnLocalMachine(workspace.getLocalPath(), directory.getSavedName());
+
+        return workspaceMapper.toDto(directory);
+    }
+
+    public DocumentDTO uploadDocument(MultipartFile file, String workspaceId)
             throws IOException {
 
-        Workspace workspace = workspaceRepository.findById(workspaceId).orElse(null);
+        Workspace workspace = utilService.isWorkspaceOwnerAndAvailable(workspaceRepository.findById(workspaceId));
         Document savedDocument = documentRepository.save(Document.builder()
                 .name(file.getOriginalFilename())
                 .type(file.getContentType())
-                .workspaceId(workspaceId)
-                .userNID(workspace.getUserNID())
-                .path(workspace.getPath() + java.io.File.separator + file.getOriginalFilename())
+                .parentId(workspaceId)
+                .owner(workspace.getOwner())
+                .path(workspace.getLocalPath() + java.io.File.separator + file.getOriginalFilename())
                 .isDeleted(false)
                 .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss")))
                 .build());
 
         file.transferTo(new java.io.File(savedDocument.getPath()));
 
-        workspace.getDocumentsIds().add(savedDocument.getId());
-        workspaceRepository.save(workspace);
-        return true;
+        return documentMapper.toDto(savedDocument);
     }
 
-    public List<DocumentDto> getAllDocuments(String workspaceId) {
-        List<Document> documents = documentRepository.findAllByWorkspaceId(workspaceId)
+    public List<DocumentDTO> getAllDocuments(String workspaceId) {
+        utilService.isWorkspaceOwnerAndAvailable(workspaceRepository.findById(workspaceId));
+        List<Document> documents = documentRepository.findAllByParentId(workspaceId)
                 .stream()
                 .filter(document -> !document.isDeleted())
                 .toList();
         return documentMapper.toDtos(documents);
+    }
+
+    public Pair<List<WorkspaceDTO>, List<DocumentDTO>> search(String searchTerm, String parentID) {
+        utilService.isWorkspaceOwnerAndAvailable(workspaceRepository.findById(parentID));
+        List<Workspace> workspaces = workspaceRepository.findByNameContainingIgnoreCaseAndParentId(searchTerm, parentID)
+                .stream()
+                .filter(workspace -> !workspace.isDeleted())
+                .toList();
+        List<Document> documents = documentRepository.findByNameContainingIgnoreCaseAndParentId(searchTerm, parentID)
+                .stream()
+                .filter(document -> !document.isDeleted())
+                .toList();
+
+        return new Pair<>(workspaceMapper.ToDtos(workspaces), documentMapper.toDtos(documents));
     }
 }

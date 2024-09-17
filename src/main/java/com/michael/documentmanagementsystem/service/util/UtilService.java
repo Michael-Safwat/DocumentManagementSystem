@@ -1,70 +1,61 @@
 package com.michael.documentmanagementsystem.service.util;
 
-import com.michael.documentmanagementsystem.dto.WorkspaceDto;
+import com.michael.documentmanagementsystem.dto.WorkspaceDTO;
 import com.michael.documentmanagementsystem.mapper.WorkspaceMapper;
 import com.michael.documentmanagementsystem.model.Document;
 import com.michael.documentmanagementsystem.model.User;
 import com.michael.documentmanagementsystem.model.Workspace;
-import com.michael.documentmanagementsystem.repository.DocumentRepository;
-import com.michael.documentmanagementsystem.repository.WorkspaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.nio.file.FileSystemException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UtilService {
 
-    private final WorkspaceRepository workspaceRepository;
-    private final DocumentRepository documentRepository;
     private final WorkspaceMapper workspaceMapper;
 
-    public Long getNID(Authentication authentication)
-    {
-        return ((User)authentication.getPrincipal()).getNID();
+    public Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
     }
 
-    public boolean isWorkspaceOwnerAndAvailable( Authentication authentication,String workspaceId)
-    {
-        Optional<Workspace> workspace = workspaceRepository.findById(workspaceId);
+    public Long getNID() {
+        Authentication authentication = getAuthentication();
+        return ((User) authentication.getPrincipal()).getNID();
+    }
 
-        if(workspace.isEmpty() || workspace.get().isDeleted())
+    public Workspace isWorkspaceOwnerAndAvailable(Optional<Workspace> workspace) {
+        if (workspace.isEmpty() || workspace.get().isDeleted())
             throw new IllegalStateException("Workspace not found");
 
-        if(!getNID(authentication).equals(workspace.get().getUserNID()))
-        {
+        if (!getNID().equals(workspace.get().getOwner())) {
             AuthorizationDecision authorizationDecision = new AuthorizationDecision(false);
             throw new AuthorizationDeniedException("Not Authorized", authorizationDecision);
         }
-        return true;
+        return workspace.get();
     }
 
-    public boolean isDocumentOwnerAndAvailable(Authentication authentication,String documentId)
-    {
-        Optional<Document> document = documentRepository.findById(documentId);
-
-        if(document.isEmpty() || document.get().isDeleted())
+    public Document isDocumentOwnerAndAvailable(Optional<Document> document) {
+        if (document.isEmpty() || document.get().isDeleted())
             throw new IllegalStateException("Document not found");
 
-        if (!getNID(authentication).equals(document.get().getUserNID()))
-        {
+        if (!getNID().equals(document.get().getOwner())) {
             AuthorizationDecision authorizationDecision = new AuthorizationDecision(false);
             throw new AuthorizationDeniedException("Not Authorized", authorizationDecision);
         }
-        return true;
+        return document.get();
     }
 
-    public Workspace intializeWorkspace(WorkspaceDto workspaceDto, String parentId)
-    {
+    public Workspace intializeWorkspace(WorkspaceDTO workspaceDto, String parentId) {
         //clean the workspace name
         workspaceDto.setName(workspaceDto.getName().replaceAll(" ", "_"));
         Workspace workspace = workspaceMapper.toEntity(workspaceDto);
@@ -73,9 +64,6 @@ public class UtilService {
         LocalDateTime date = LocalDateTime.now();
         String name = (workspaceDto.getName() + "_" + date).replaceAll(":", "_");
         workspace.setSavedName(name);
-
-        workspace.setDocumentsIds(Collections.emptyList());
-        workspace.setDirectoriesIds(Collections.emptyList());
 
         workspace.setParentId(parentId);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
