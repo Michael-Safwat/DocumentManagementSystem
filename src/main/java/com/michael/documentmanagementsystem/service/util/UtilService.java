@@ -33,6 +33,15 @@ public class UtilService {
         return ((User) authentication.getPrincipal()).getNID();
     }
 
+    public void isAuthorized(Long NID)
+    {
+        if(!getNID().equals(NID))
+        {
+            AuthorizationDecision authorizationDecision = new AuthorizationDecision(false);
+            throw new AuthorizationDeniedException("Not Authorized", authorizationDecision);
+        }
+    }
+
     public Workspace isWorkspaceOwnerAndAvailable(Optional<Workspace> workspace) {
         if (workspace.isEmpty() || workspace.get().isDeleted())
             throw new IllegalStateException("Workspace not found");

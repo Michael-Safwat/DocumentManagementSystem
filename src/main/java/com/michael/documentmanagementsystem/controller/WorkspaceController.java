@@ -31,7 +31,7 @@ public class WorkspaceController {
 
     @GetMapping("/all/{parentId}")
     public ResponseEntity<List<WorkspaceDTO>> getAllWorkspaces(@PathVariable String parentId) {
-        return new ResponseEntity<>(workspaceService.getAllWorkspaces(parentId), HttpStatus.OK);
+        return new ResponseEntity<>(workspaceService.getAllWorkspaces(parentId),HttpStatus.OK);
     }
 
     @GetMapping("/{workspaceId}")
@@ -69,7 +69,13 @@ public class WorkspaceController {
         return new ResponseEntity<>(workspaceService.getAllDocuments(workspacesId), HttpStatus.OK);
     }
 
-    @GetMapping("/search/{searchTerm}/{parentID}")
+    @GetMapping("/search/{searchTerm}/{owner}")
+    public ResponseEntity<List<WorkspaceDTO>> searchWorkspaces(@PathVariable String searchTerm,@PathVariable Long owner)
+    {
+        return new ResponseEntity<>(workspaceService.searchWorkspaces(searchTerm, owner), HttpStatus.OK);
+    }
+
+    @GetMapping("/search/content/{searchTerm}/{parentID}")
     public ResponseEntity<Pair<List<WorkspaceDTO>, List<DocumentDTO>>> searchWorkspace(@PathVariable("searchTerm") String searchTerm,
                                                                                        @PathVariable("parentID") String parentID) {
         return new ResponseEntity<>(workspaceService.search(searchTerm, parentID), HttpStatus.OK);

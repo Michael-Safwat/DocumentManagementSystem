@@ -12,4 +12,5 @@ public interface WorkspaceRepository extends MongoRepository<Workspace, String> 
     List<Workspace> findAllByParentId(String parentId);
     List<Workspace> findAllByOwnerAndParentId(Long owner, String parentId);
     List<Workspace> findByNameContainingIgnoreCaseAndParentId(String name, String parentId);
+    List<Workspace> findByNameContainingIgnoreCaseAndOwnerAndParentId(String searchTerm, Long owner,String parentId);
 }

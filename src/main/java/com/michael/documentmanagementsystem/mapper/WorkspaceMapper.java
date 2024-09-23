@@ -14,5 +14,5 @@ public interface WorkspaceMapper {
 
     Workspace toEntity(WorkspaceDTO workspaceDto);
 
-    List<WorkspaceDTO> ToDtos(List<Workspace> workspaces);
+    List<WorkspaceDTO> toDtos(List<Workspace> workspaces);
 }

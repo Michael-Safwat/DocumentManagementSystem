@@ -47,11 +47,12 @@ public class WorkspaceService {
     }
 
     public List<WorkspaceDTO> getAllWorkspaces(String parentId) {
+
         List<Workspace> workspaces = workspaceRepository.findAllByOwnerAndParentId(utilService.getNID(), parentId)
                 .stream()
                 .filter(workspace -> !workspace.isDeleted())
                 .toList();
-        return workspaceMapper.ToDtos(workspaces);
+        return workspaceMapper.toDtos(workspaces);
     }
 
     public WorkspaceDTO getWorkspacesById(String workspaceId) {
@@ -73,7 +74,10 @@ public class WorkspaceService {
         Workspace workspace = utilService.isWorkspaceOwnerAndAvailable(workspaceRepository.findById(workspaceId));
         workspace.setDeleted(true);
 
-        List<Workspace> directories = workspaceRepository.findAllByParentId(workspaceId);
+        List<Workspace> directories = workspaceRepository.findAllByParentId(workspaceId)
+                .stream()
+                .filter(directory-> !directory.isDeleted())
+                .toList();
         for (Workspace directory : directories)
             deleteWorkspace(directory.getId());
 
@@ -134,11 +138,20 @@ public class WorkspaceService {
                 .stream()
                 .filter(workspace -> !workspace.isDeleted())
                 .toList();
-        List<Document> documents = documentRepository.findByNameContainingIgnoreCaseAndParentId(searchTerm, parentID)
+        List<Document> documents = documentRepository.findByNameContainingIgnoreCaseAndParentIdOrTypeContainingIgnoreCaseAndParentId(searchTerm,parentID,searchTerm, parentID)
                 .stream()
                 .filter(document -> !document.isDeleted())
                 .toList();
 
-        return new Pair<>(workspaceMapper.ToDtos(workspaces), documentMapper.toDtos(documents));
+        return new Pair<>(workspaceMapper.toDtos(workspaces), documentMapper.toDtos(documents));
+    }
+
+    public List<WorkspaceDTO> searchWorkspaces(String searchTerm, Long owner) {
+        utilService.isAuthorized(owner);
+        List<Workspace> workspaces = workspaceRepository.findByNameContainingIgnoreCaseAndOwnerAndParentId(searchTerm, owner,"root")
+                .stream()
+                .filter(workspace -> !workspace.isDeleted())
+                .toList();
+        return workspaceMapper.toDtos(workspaces);
     }
 }
